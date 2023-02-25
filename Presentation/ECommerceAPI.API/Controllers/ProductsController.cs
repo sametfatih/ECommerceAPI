@@ -11,24 +11,26 @@ namespace ECommerceAPI.API.Controllers
         private readonly IProductReadRepository _productReadRepository;
         private readonly IProductWriteRepository _productWriteRepository;
 
-        public ProductsController(IProductReadRepository productReadRepository, IProductWriteRepository productWriteRepository)
+        private readonly IOrderReadRepository _orderReadRepository;
+        private readonly IOrderWriteRepository _orderWriteRepository;
+
+        private readonly ICustomerReadRepository _customerReadRepository;
+        private readonly ICustomerWriteRepository _customerWriteRepository;
+
+        public ProductsController(IProductReadRepository productReadRepository, IProductWriteRepository productWriteRepository, IOrderReadRepository orderReadRepository, IOrderWriteRepository orderWriteRepository, ICustomerReadRepository customerReadRepository, ICustomerWriteRepository customerWriteRepository)
         {
             _productReadRepository = productReadRepository;
             _productWriteRepository = productWriteRepository;
+            _orderReadRepository = orderReadRepository;
+            _orderWriteRepository = orderWriteRepository;
+            _customerReadRepository = customerReadRepository;
+            _customerWriteRepository = customerWriteRepository;
         }
 
         [HttpGet]
-        public async void Get()
+        public async Task Get()
         {
-            await _productWriteRepository.AddRangeAsync(new()
-            {
-                new(){Id=Guid.NewGuid(),Name="Product 1",Price=100,CreateDate=DateTime.UtcNow,Stock=10},
-                new(){Id=Guid.NewGuid(),Name="Product 2",Price=200,CreateDate=DateTime.UtcNow,Stock=11},
-                new(){Id=Guid.NewGuid(),Name="Product 3",Price=300,CreateDate=DateTime.UtcNow,Stock=12},
-                new(){Id=Guid.NewGuid(),Name="Product 4",Price=400,CreateDate=DateTime.UtcNow,Stock=13},
-            });
-
-            await _productWriteRepository.SaveAsync();
+            
         }
     }
 }
