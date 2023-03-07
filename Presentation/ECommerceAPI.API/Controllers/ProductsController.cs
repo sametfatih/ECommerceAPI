@@ -14,17 +14,18 @@ namespace ECommerceAPI.API.Controllers
     {
         private readonly IProductReadRepository _productReadRepository;
         private readonly IProductWriteRepository _productWriteRepository;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ProductsController(IProductReadRepository productReadRepository, IProductWriteRepository productWriteRepository)
+        public ProductsController(IProductReadRepository productReadRepository, IProductWriteRepository productWriteRepository, IWebHostEnvironment webHostEnvironment)
         {
             _productReadRepository = productReadRepository;
             _productWriteRepository = productWriteRepository;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery] Pagination pagination)
         {
-            await Task.Delay(500);
             var totalCount = _productReadRepository.GetAll(false).Count();
             var products = _productReadRepository.GetAll(false).Skip(pagination.Page * pagination.Size).Take(pagination.Size).Select(p => new
             {
@@ -80,6 +81,45 @@ namespace ECommerceAPI.API.Controllers
             await _productWriteRepository.SaveAsync();
             return Ok();
         }
+        [HttpPost("[action]")]
+        public async Task<IActionResult> Upload()
+        {
+            string uploadPath = Path.Combine(_webHostEnvironment.WebRootPath,"resource/product-images");
 
+            if (!Directory.Exists(uploadPath))
+                Directory.CreateDirectory(uploadPath);
+
+            foreach (IFormFile file in Request.Form.Files)
+            {
+                // türkçe karakterleri dönüştürme
+                string source = "ığüşöçĞÜŞİÖÇ";
+                string destination = "igusocGUSIOC";
+
+                string name = Path.GetFileNameWithoutExtension(file.FileName);
+
+                for (int i = 0; i < source.Length; i++)
+                {
+                    name = name.Replace(source[i], destination[i]);
+                }
+                //
+
+                string fileName = name + "-" + Guid.NewGuid().ToString();
+                string fileExtention = Path.GetExtension(file.FileName);
+
+                string fullPath = Path.Combine(uploadPath, $"{fileName+fileExtention}");
+
+                using FileStream fileStream = new(
+                    fullPath, 
+                    FileMode.Create, 
+                    FileAccess.Write, 
+                    FileShare.None, 
+                    1024 * 1024, 
+                    useAsync: false);
+
+                await file.CopyToAsync(fileStream);
+                await fileStream.FlushAsync();
+            }
+            return Ok();
+        }
     }
 }
