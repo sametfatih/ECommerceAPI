@@ -1,5 +1,7 @@
 ﻿using ECommerceAPI.Application.Repositories;
+using ECommerceAPI.Application.Repositories.File;
 using ECommerceAPI.Application.RequestParameters;
+using ECommerceAPI.Application.Services;
 using ECommerceAPI.Application.ViewModels.Products;
 using ECommerceAPI.Domain.Entities;
 using Microsoft.AspNetCore.Http;
@@ -14,13 +16,25 @@ namespace ECommerceAPI.API.Controllers
     {
         private readonly IProductReadRepository _productReadRepository;
         private readonly IProductWriteRepository _productWriteRepository;
-        private readonly IWebHostEnvironment _webHostEnvironment;
+        readonly IFileService _fileService;
+        readonly IFileReadRepository _fileReadRepository;
+        readonly IFileWriteRepository _fileWriteRepository; 
+        readonly IProductImageFileReadRepository _ProductImageReadRepository;
+        readonly IProductImageFileWriteRepository _ProductImageWriteRepository; 
+        readonly IInvoiceFileReadRepository _InvoiceFileReadRepository;
+        readonly IInvoiceFileWriteRepository _InvoiceFileWriteRepository;
 
-        public ProductsController(IProductReadRepository productReadRepository, IProductWriteRepository productWriteRepository, IWebHostEnvironment webHostEnvironment)
+        public ProductsController(IProductReadRepository productReadRepository, IProductWriteRepository productWriteRepository, IFileService fileService, IFileReadRepository fileReadRepository, IFileWriteRepository fileWriteRepository, IProductImageFileReadRepository productImageReadRepository, IProductImageFileWriteRepository productImageWriteRepository, IInvoiceFileReadRepository ınvoiceFileReadRepository, IInvoiceFileWriteRepository ınvoiceFileWriteRepository)
         {
             _productReadRepository = productReadRepository;
             _productWriteRepository = productWriteRepository;
-            _webHostEnvironment = webHostEnvironment;
+            _fileService = fileService;
+            _fileReadRepository = fileReadRepository;
+            _fileWriteRepository = fileWriteRepository;
+            _ProductImageReadRepository = productImageReadRepository;
+            _ProductImageWriteRepository = productImageWriteRepository;
+            _InvoiceFileReadRepository = ınvoiceFileReadRepository;
+            _InvoiceFileWriteRepository = ınvoiceFileWriteRepository;
         }
 
         [HttpGet]
@@ -84,41 +98,16 @@ namespace ECommerceAPI.API.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> Upload()
         {
-            string uploadPath = Path.Combine(_webHostEnvironment.WebRootPath,"resource/product-images");
 
-            if (!Directory.Exists(uploadPath))
-                Directory.CreateDirectory(uploadPath);
+            var datas = await _fileService.UploadAsync("resource/product-images",Request.Form.Files);
 
-            foreach (IFormFile file in Request.Form.Files)
+            _ProductImageWriteRepository.AddRangeAsync(datas.Select(d => new ProductImageFile()
             {
-                // türkçe karakterleri dönüştürme
-                string source = "ığüşöçĞÜŞİÖÇ";
-                string destination = "igusocGUSIOC";
+                FileName = d.fileName,
+                Path = d.path
+            }).ToList());
 
-                string name = Path.GetFileNameWithoutExtension(file.FileName);
-
-                for (int i = 0; i < source.Length; i++)
-                {
-                    name = name.Replace(source[i], destination[i]);
-                }
-                //
-
-                string fileName = name + "-" + Guid.NewGuid().ToString();
-                string fileExtention = Path.GetExtension(file.FileName);
-
-                string fullPath = Path.Combine(uploadPath, $"{fileName+fileExtention}");
-
-                using FileStream fileStream = new(
-                    fullPath, 
-                    FileMode.Create, 
-                    FileAccess.Write, 
-                    FileShare.None, 
-                    1024 * 1024, 
-                    useAsync: false);
-
-                await file.CopyToAsync(fileStream);
-                await fileStream.FlushAsync();
-            }
+            await _ProductImageWriteRepository.SaveAsync();
             return Ok();
         }
     }
