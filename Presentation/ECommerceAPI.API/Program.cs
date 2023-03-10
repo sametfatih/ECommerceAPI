@@ -1,6 +1,7 @@
 using ECommerceAPI.Application.Validators.Product;
 using ECommerceAPI.Infrastructure;
 using ECommerceAPI.Infrastructure.Filters;
+using ECommerceAPI.Infrastructure.Services.Storage.Azure;
 using ECommerceAPI.Infrastructure.Services.Storage.Local;
 using ECommerceAPI.Persistence;
 using FluentValidation.AspNetCore;
