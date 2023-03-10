@@ -1,7 +1,7 @@
-﻿using ECommerceAPI.Application.Repositories;
+﻿using ECommerceAPI.Application.Abstractions.Storage;
+using ECommerceAPI.Application.Repositories;
 using ECommerceAPI.Application.Repositories.File;
 using ECommerceAPI.Application.RequestParameters;
-using ECommerceAPI.Application.Services;
 using ECommerceAPI.Application.ViewModels.Products;
 using ECommerceAPI.Domain.Entities;
 using Microsoft.AspNetCore.Http;
@@ -16,25 +16,25 @@ namespace ECommerceAPI.API.Controllers
     {
         private readonly IProductReadRepository _productReadRepository;
         private readonly IProductWriteRepository _productWriteRepository;
-        readonly IFileService _fileService;
         readonly IFileReadRepository _fileReadRepository;
         readonly IFileWriteRepository _fileWriteRepository; 
         readonly IProductImageFileReadRepository _ProductImageReadRepository;
         readonly IProductImageFileWriteRepository _ProductImageWriteRepository; 
         readonly IInvoiceFileReadRepository _InvoiceFileReadRepository;
         readonly IInvoiceFileWriteRepository _InvoiceFileWriteRepository;
+        readonly IStorageService _storageService;
 
-        public ProductsController(IProductReadRepository productReadRepository, IProductWriteRepository productWriteRepository, IFileService fileService, IFileReadRepository fileReadRepository, IFileWriteRepository fileWriteRepository, IProductImageFileReadRepository productImageReadRepository, IProductImageFileWriteRepository productImageWriteRepository, IInvoiceFileReadRepository ınvoiceFileReadRepository, IInvoiceFileWriteRepository ınvoiceFileWriteRepository)
+        public ProductsController(IProductReadRepository productReadRepository, IProductWriteRepository productWriteRepository, IFileReadRepository fileReadRepository, IFileWriteRepository fileWriteRepository, IProductImageFileReadRepository productImageReadRepository, IProductImageFileWriteRepository productImageWriteRepository, IInvoiceFileReadRepository ınvoiceFileReadRepository, IInvoiceFileWriteRepository ınvoiceFileWriteRepository, IStorageService storageService)
         {
             _productReadRepository = productReadRepository;
             _productWriteRepository = productWriteRepository;
-            _fileService = fileService;
             _fileReadRepository = fileReadRepository;
             _fileWriteRepository = fileWriteRepository;
             _ProductImageReadRepository = productImageReadRepository;
             _ProductImageWriteRepository = productImageWriteRepository;
             _InvoiceFileReadRepository = ınvoiceFileReadRepository;
             _InvoiceFileWriteRepository = ınvoiceFileWriteRepository;
+            _storageService = storageService;
         }
 
         [HttpGet]
@@ -98,13 +98,15 @@ namespace ECommerceAPI.API.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> Upload()
         {
+            var datas = await _storageService.UploadAsync("resource/files", Request.Form.Files);
 
-            var datas = await _fileService.UploadAsync("resource/product-images",Request.Form.Files);
+            //var datas = await _fileService.UploadAsync("resource/product-images",Request.Form.Files);
 
-            _ProductImageWriteRepository.AddRangeAsync(datas.Select(d => new ProductImageFile()
+            await _ProductImageWriteRepository.AddRangeAsync(datas.Select(d => new ProductImageFile()
             {
                 FileName = d.fileName,
-                Path = d.path
+                Path = d.pathOrContainer,
+                Storage = _storageService.StorageName
             }).ToList());
 
             await _ProductImageWriteRepository.SaveAsync();
