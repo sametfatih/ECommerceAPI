@@ -67,7 +67,7 @@ namespace ECommerceAPI.Infrastructure.Services.Storage.Local
 
                 bool result = await CopyFileAsync(Path.Combine(uploadPath, newFileName), file);
 
-                datas.Add((newFileName, Path.Combine(path, newFileName)));
+                datas.Add((newFileName, $"{path}/{newFileName}"));
                 results.Add(result);
             }
 
