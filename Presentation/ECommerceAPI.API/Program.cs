@@ -1,3 +1,4 @@
+using ECommerceAPI.Application;
 using ECommerceAPI.Application.Validators.Product;
 using ECommerceAPI.Infrastructure;
 using ECommerceAPI.Infrastructure.Filters;
@@ -12,6 +13,8 @@ builder.Services.AddPersistenceServices();
 builder.Services.AddInfrastructureServices();
 builder.Services.AddStorage<AzureStorage>();
 //builder.Services.AddStorage(ECommerceAPI.Infrastructure.Enums.StorageType.Local);
+
+builder.Services.AddApplicationServices();
 
 builder.Services.AddCors(
     options => options.AddDefaultPolicy(

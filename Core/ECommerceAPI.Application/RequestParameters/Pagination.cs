@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ECommerceAPI.Application.RequestParameters
 {
-    public record Pagination
+    public abstract class Pagination
     {
         public int Page { get; set; } = 0;
         public int Size { get; set; } = 5;
