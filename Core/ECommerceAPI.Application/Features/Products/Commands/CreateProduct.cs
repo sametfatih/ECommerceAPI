@@ -1,10 +1,5 @@
 ﻿using ECommerceAPI.Application.Repositories;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ECommerceAPI.Application.Features.Products.Commands
 {
@@ -20,7 +15,7 @@ namespace ECommerceAPI.Application.Features.Products.Commands
     }
     public class CreateProductCommandHandler : IRequestHandler<CreateProductCommandRequest, CreateProductCommandResponse>
     {
-        IProductWriteRepository _productWriteRepository;
+        readonly IProductWriteRepository _productWriteRepository;
 
         public CreateProductCommandHandler(IProductWriteRepository productWriteRepository)
         {
@@ -37,7 +32,7 @@ namespace ECommerceAPI.Application.Features.Products.Commands
             });
             await _productWriteRepository.SaveAsync();
 
-            return new() {};
+            return new() { };
         }
     }
 }

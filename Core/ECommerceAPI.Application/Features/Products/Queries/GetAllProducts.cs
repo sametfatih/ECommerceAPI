@@ -1,21 +1,16 @@
 ﻿using ECommerceAPI.Application.Repositories;
 using ECommerceAPI.Application.RequestParameters;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ECommerceAPI.Application.Features.Products.Queries
 {
-    public class GetAllProductsQueryRequest : Pagination,IRequest<GetAllProductQueryResponse>
+    public class GetAllProductsQueryRequest : Pagination, IRequest<GetAllProductQueryResponse>
     {
     }
 
     public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQueryRequest, GetAllProductQueryResponse>
     {
-        IProductReadRepository _productReadRepository;
+        readonly IProductReadRepository _productReadRepository;
 
         public GetAllProductsQueryHandler(IProductReadRepository productReadRepository)
         {
@@ -43,7 +38,7 @@ namespace ECommerceAPI.Application.Features.Products.Queries
         }
     }
 
-    public class GetAllProductQueryResponse 
+    public class GetAllProductQueryResponse
     {
         public int TotalCount { get; set; }
         public object Products { get; set; }
