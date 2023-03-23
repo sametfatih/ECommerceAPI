@@ -28,5 +28,12 @@ namespace ECommerceAPI.API.Controllers
             LoginAppUserCommandResponse response = await _mediator.Send(loginAppUserCommandRequest);
             return Ok(response);
         }
+
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin(GoogleLoginAppUserCommandRequest googleLoginAppUserCommandRequest)
+        {
+            GoogleLoginAppUserCommandResponse response = await _mediator.Send(googleLoginAppUserCommandRequest);
+            return Ok(response);
+        }
     }
 }
