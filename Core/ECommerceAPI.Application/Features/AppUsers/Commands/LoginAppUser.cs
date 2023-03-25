@@ -1,5 +1,7 @@
-﻿using ECommerceAPI.Application.Abstractions.Token;
+﻿using ECommerceAPI.Application.Abstractions.Services.Authentications;
+using ECommerceAPI.Application.Abstractions.Token;
 using ECommerceAPI.Application.DTOs;
+using ECommerceAPI.Application.DTOs.AppUser;
 using ECommerceAPI.Application.Exceptions;
 using ECommerceAPI.Domain.Entities.Identity;
 using MediatR;
@@ -19,56 +21,25 @@ namespace ECommerceAPI.Application.Features.AppUsers.Commands
     }
 
     public class LoginAppUserCommandResponse
-    {     
-    }
-    //SUCCESS RESPONSE
-    public class LoginAppUserSuccessCommandResponse : LoginAppUserCommandResponse
     {
         public Token Token { get; set; }
-    }
-    //ERROR RESPONSE
-    public class LoginAppUserErrorCommandResponse : LoginAppUserCommandResponse
-    {
-        public string Message { get; set; }
     }
 
     public class LoginAppUserCommandHandler : IRequestHandler<LoginAppUserCommandRequest, LoginAppUserCommandResponse>
     {
-        readonly UserManager<AppUser> _userManager;
-        readonly SignInManager<AppUser> _signInManager;
-        readonly ITokenHandler _tokenHandler;
+        readonly IInternalAuthentication _internalAuthService;
 
-        public LoginAppUserCommandHandler(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ITokenHandler tokenHandler)
+        public LoginAppUserCommandHandler(IInternalAuthentication internalAuthService)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _tokenHandler = tokenHandler;
+            _internalAuthService = internalAuthService;
         }
 
         public async Task<LoginAppUserCommandResponse> Handle(LoginAppUserCommandRequest request, CancellationToken cancellationToken)
         {
-            AppUser appUser = await _userManager.FindByNameAsync(request.UsernameOrEmail);
+            LoginResponse response = await _internalAuthService.LoginAsync(
+                new() { UsernameOrEmail = request.UsernameOrEmail, Password = request.Password }, 15);
 
-            if (appUser == null)
-                appUser = await _userManager.FindByEmailAsync(request.UsernameOrEmail);
-
-            if (appUser == null)
-                throw new NotFoundUserException();
-
-            SignInResult result = await _signInManager.CheckPasswordSignInAsync(appUser, request.Password, false);
-
-            if (result.Succeeded) //Authentication başarılı!
-            {
-                Token token = _tokenHandler.CreateAccessToken(5);
-                return new LoginAppUserSuccessCommandResponse()
-                {
-                    Token = token
-                };
-            }
-            //return new LoginAppUserErrorCommandResponse() { 
-            //        Message = "Kullanıcı adı veya şifre hatalı."
-            //};
-            throw new AuthenticationErrorException();
+            return new() { Token = response.Token };
         }
     }
 }

@@ -15,31 +15,11 @@ namespace ECommerceAPI.API.Controllers
         {
             _mediator = mediator;
         }
+
         [HttpPost]
         public async Task<IActionResult> Create(CreateAppUserCommandRequest createAppUserCommandRequest)
         {
             CreateAppUserCommandResponse response = await _mediator.Send(createAppUserCommandRequest);
-            return Ok(response);
-        }
-
-        [HttpPost("[action]")]
-        public async Task<IActionResult> Login(LoginAppUserCommandRequest loginAppUserCommandRequest)
-        {
-            LoginAppUserCommandResponse response = await _mediator.Send(loginAppUserCommandRequest);
-            return Ok(response);
-        }
-
-        [HttpPost("google-login")]
-        public async Task<IActionResult> GoogleLogin(GoogleLoginAppUserCommandRequest googleLoginAppUserCommandRequest)
-        {
-            GoogleLoginAppUserCommandResponse response = await _mediator.Send(googleLoginAppUserCommandRequest);
-            return Ok(response);
-        }
-
-        [HttpPost("facebook-login")]
-        public async Task<IActionResult> FacebookLogin(FacebookLoginAppUserCommandRequest facebookLoginAppUserCommandRequest)
-        {
-            FacebookLoginAppUserCommandResponse response = await _mediator.Send(facebookLoginAppUserCommandRequest);
             return Ok(response);
         }
     }
